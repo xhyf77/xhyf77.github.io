@@ -137,6 +137,35 @@
 <p>An advantage of Andrea’s anon_vma structure is that it solves the mremap problem that the anonmm structure did not. <strong>Since the offset stored in each page is relative to the base of the vma that maps it, the region can be remapped without changing the offset.</strong> However, since vmas can be merged, it is not an an absolutely painless solution.</p>
 </blockquote>
 <p>起初一个<code>page</code>的<code>index</code>字段被设计为指向一个它所映射的虚拟地址，但是这样导致无法找到<code>page</code>所被映射的所有虚拟地址。因此将<code>index</code>字段设置为相对于<code>vma-&gt;start</code>的偏移，同时规定在进行remap的时候，<code>page</code>只能被映射到不改变自己<code>index</code>的虚拟地址处，也就是说同一个<code>page</code>在多个<code>vma</code>中，该<code>page</code>的虚拟地址相对于这多个<code>vma</code>的<code>vma-&gt;start</code>都是一样的。这样就可以支持仅凭借<code>page-&gt;index</code>以及其他<code>vma-&gt;start</code>的信息来查到PTE entry了。</p>
+<h3 id="一些基于该组织方式的分析"><a href="#一些基于该组织方式的分析" class="headerlink" title="一些基于该组织方式的分析"></a>一些基于该组织方式的分析</h3><blockquote>
+<p>主要是思考一下能否改进该方法，然后体会到该方法的局限性</p>
+</blockquote>
+<p>主要思考两个场景</p>
+<h4 id="1-刚exec加载完程序进行运行（并不进行fork）"><a href="#1-刚exec加载完程序进行运行（并不进行fork）" class="headerlink" title="1.刚exec加载完程序进行运行（并不进行fork）"></a>1.刚exec加载完程序进行运行（并不进行fork）</h4><p>我们的场景就是从这么一个全新的exec后的进程开始。当该进程的匿名映射<code>VMA</code>通过<code>page fault</code>分配第一个<code>page frame</code>的时候，这个时候会进行<code>anon_vma</code>结构体的分配（可能是新建一个也可能是复用其他<code>vma</code>的，也可能自己的<code>vma</code>已经指向了一个<code>anon_vma</code>）。</p>
+<ul>
+<li><p>复用</p>
+<p>复用的规则很严格，要求当前<code>vma1</code>和复用的<code>anon_vma</code>所在的<code>vma2</code>在虚拟地址上完全相邻，同时还要判断两个<code>vma</code>的权限除了<code>R,W,E</code>访问权限外的其他权限是否一样，如果不一样也不能复用。为什么不考虑<code>R,W,E</code>访问权限，因为有一个修改虚拟地址空间某一块访问权限的系统调用<code>mprotect</code>。我的理解是由于<code>mprotect</code>的存在，可能会导致本来一个<code>vma</code>被<code>split</code>成了两个或者多个<code>vma</code>，但这些<code>vma</code>在空间上是连续的，除了访问权限外其他权限都一样，因此可以认为他们原来是同一块<code>vma</code>。由于是因为<code>mprotect</code>将一大块<code>vma</code>从访问权限上<code>split</code>成了多块<code>vma</code>而已。要满足上述这些条件才能复用这个<code>anon_vma</code>，但目前来看的话，这样复用的话会导致一个<code>page</code>所对应的<code>anon_vma</code>链表里面包含了很多不相关的<code>vma</code>，这样可能会导致在<code>unmap</code>的时候访问的链表过长，只是节省了内存，但是我看到内核源码里面有<code>struct vm_area_struct *vma_merge(....)</code>函数，应该是对<code>vma</code>合并的函数，可能前面的复用方案配合这个会提高一下性能吧。但注意的是：在成功复用的时候并没有调用<code>vma_merge(...)</code>函数。</p>
+</li>
+<li><p>新建</p>
+<p>如果这个<code>vma</code>并没有指向一个<code>anon_vma</code>同时也没找到一个复用的，那么就需要新建，这个没有什么可分析的</p>
+</li>
+</ul>
+<h4 id="2-fork的场景"><a href="#2-fork的场景" class="headerlink" title="2.fork的场景"></a>2.fork的场景</h4><p>当<code>fork</code>后，由于COW机制，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/xhyf77/blog-picture/master/2024/09/upgit_20240904_1725443216.gif" alt="6"></p>
+<p>发生写操作后</p>
+<p><img src="https://raw.githubusercontent.com/xhyf77/blog-picture/master/2024/09/upgit_20240904_1725450879.gif" alt="7"></p>
+<blockquote>
+<p>上图来自于<a target="_blank" rel="noopener" href="http://www.wowotech.net/">http://www.wowotech.net/</a></p>
+</blockquote>
+<p>因为子进程共用了父进程的<code>anon_vma</code>结构，因此在查找<code>Page frame2</code>的逆向映射的时候，要遍历<code>VMA_P和VMA_C</code>，而<code>VMA_P</code>是无效遍历，对于<code>fork</code>密集的场景，这样会造成很多无效遍历，导致效率十分低下。</p>
+<h4 id="思考：能否在第一次写操作的时候给该vma新建一个anon-vma？"><a href="#思考：能否在第一次写操作的时候给该vma新建一个anon-vma？" class="headerlink" title="思考：能否在第一次写操作的时候给该vma新建一个anon_vma？"></a>思考：能否在第一次写操作的时候给该<code>vma</code>新建一个<code>anon_vma</code>？</h4><p>我们针对<code>fork</code>出来的进程在第一次写操作(写到图中<code>Page frame 2</code>对应的虚拟地址)的时候新建一个<code>anon_vma2</code>，然后将这个<code>Page frame 2</code>指向新的<code>anon_vma2</code>，同时也将<code>vma_c</code>指向新的<code>anon_vma2</code>。在之后的写访问就按照原来的规则进行。</p>
+<p>答案是不行的，其实仔细思考一下，这样当<code>VMA_C</code>的其他虚拟地址处发生了缺页异常后，我们都会尝试重新分配一个<code>anon_vma</code>给它，那么这就有点类似于上一个版本<code>pte_chain</code>时期的逆向映射方案了。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>这个方案有点类似于分块的思想，原来的<code>pte_chain</code>是给每一个<code>page frame</code>都维护一个映射列表，这样<code>unmap</code>时查询每一个有效<code>vma</code>的时间是$$O(1)$$，但内存消耗很大。但现在这个算法是每个<code>vma</code>里面的所有<code>page frame</code>都归于一个<code>anon_vma</code>(list),同时多个<code>vma</code>也可能共享一个<code>anon_vma</code>(list)。这样节省了内存，但增加了<code>unmap</code>耗费的时间。</p>
+<p>但对于<code>fork</code>这个动作来说</p>
+<ul>
+<li><code>pte_chain</code>的方案会更新每个<code>page frame</code>的<code>pte_chain</code>，耗费的时间很大。</li>
+<li>本文介绍的方案则只用更新子进程的各个<code>vma</code>的<code>anon_vma *</code>即可。</li>
+</ul>
 	  
 	</div>
 
@@ -241,7 +270,7 @@
 	
 	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
 	   <div id="toc" class="toc collapse in">
-			<ol class="toc-article"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E6%94%AF%E6%8C%81%E7%9A%84%E9%87%8D%E6%98%A0%E5%B0%84%E6%83%85%E5%86%B5"><span class="toc-article-text">支持的重映射情况</span></a></li></ol>
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E6%94%AF%E6%8C%81%E7%9A%84%E9%87%8D%E6%98%A0%E5%B0%84%E6%83%85%E5%86%B5"><span class="toc-article-text">支持的重映射情况</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E4%B8%80%E4%BA%9B%E5%9F%BA%E4%BA%8E%E8%AF%A5%E7%BB%84%E7%BB%87%E6%96%B9%E5%BC%8F%E7%9A%84%E5%88%86%E6%9E%90"><span class="toc-article-text">一些基于该组织方式的分析</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-4"><a class="toc-article-link" href="#1-%E5%88%9Aexec%E5%8A%A0%E8%BD%BD%E5%AE%8C%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E8%BF%90%E8%A1%8C%EF%BC%88%E5%B9%B6%E4%B8%8D%E8%BF%9B%E8%A1%8Cfork%EF%BC%89"><span class="toc-article-text">1.刚exec加载完程序进行运行（并不进行fork）</span></a></li><li class="toc-article-item toc-article-level-4"><a class="toc-article-link" href="#2-fork%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-article-text">2.fork的场景</span></a></li><li class="toc-article-item toc-article-level-4"><a class="toc-article-link" href="#%E6%80%9D%E8%80%83%EF%BC%9A%E8%83%BD%E5%90%A6%E5%9C%A8%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E6%93%8D%E4%BD%9C%E7%9A%84%E6%97%B6%E5%80%99%E7%BB%99%E8%AF%A5vma%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AAanon-vma%EF%BC%9F"><span class="toc-article-text">思考：能否在第一次写操作的时候给该vma新建一个anon_vma？</span></a></li></ol></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-article-text">总结</span></a></li></ol>
 		</div>
 	
 	</div>
