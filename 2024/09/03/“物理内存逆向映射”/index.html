@@ -3,15 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>物理内存逆向映射 | xhyf77</title>
+  <title>物理内存逆向映射(v2.6.11版) | xhyf77</title>
   <meta name="author" content="John Doe">
   
-  <meta name="description" content="Have a test , this is my first">
+  <meta name="description" content="讲一下我对于linux kernel v2.6.11版本的物理内存映射的一些思考和学习中的疑难点。
+
+上面这个图可以理解为从虚拟地址vma方向到物理地址page方向的一个结构图">
   
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <meta property="og:title" content="物理内存逆向映射"/>
+  <meta property="og:title" content="物理内存逆向映射(v2.6.11版)"/>
   <meta property="og:site_name" content="xhyf77"/>
 
   
@@ -100,7 +102,7 @@
 
 	
 		<div class="page-header page-header-inverse ">		
-			<h1 class="title title-inverse "> 物理内存逆向映射</h1>
+			<h1 class="title title-inverse "> 物理内存逆向映射(v2.6.11版)</h1>
 		</div>		
 	
 
@@ -120,7 +122,21 @@
 	<div class="mypage">		
 	  		
 
-	  <p>Have a test , this is my first <img src="https://raw.githubusercontent.com/xhyf77/blog-picture/master/2024/09/upgit_20240904_1725438596.png" alt="095ad2e9cf81beaae7282db588dd6d86"></p>
+	  <p>讲一下我对于linux kernel v2.6.11版本的物理内存映射的一些思考和学习中的疑难点。</p>
+<p><img src="http://lastweek.io/notes/notes_rmap2.png" alt="img_2"></p>
+<p>上面这个图可以理解为从虚拟地址vma方向到物理地址page方向的一个结构图</p>
+<span id="more"></span>
+
+<p><img src="https://raw.githubusercontent.com/xhyf77/blog-picture/master/2024/09/upgit_20240904_1725440001.gif" alt="5"></p>
+<blockquote>
+<p>上图来自于wowotech.net</p>
+</blockquote>
+<h3 id="支持的重映射情况"><a href="#支持的重映射情况" class="headerlink" title="支持的重映射情况"></a>支持的重映射情况</h3><p>每一个物理页page可能会被重映射到多个虚拟地址空间中，但每一个<code>page</code>只有一个<code>index</code>字段来保存该页面的映射信息，但是在进行<code>unmap</code>的时候却遍历了<code>anon_vma</code>中的所有<code>vma</code>来解除映射，<code>page</code>是如何通过一个<code>index</code>字段来定位到所有与他相关的<code>vma</code>的虚拟地址呢？</p>
+<p><a target="_blank" rel="noopener" href="https://landley.net/kdocs/ols/2004/ols2004v2-pages-71-74.pdf">Object-based Reverse Mapping</a>中给出了答案</p>
+<blockquote>
+<p>An advantage of Andrea’s anon_vma structure is that it solves the mremap problem that the anonmm structure did not. <strong>Since the offset stored in each page is relative to the base of the vma that maps it, the region can be remapped without changing the offset.</strong> However, since vmas can be merged, it is not an an absolutely painless solution.</p>
+</blockquote>
+<p>起初一个<code>page</code>的<code>index</code>字段被设计为指向一个它所映射的虚拟地址，但是这样导致无法找到<code>page</code>所被映射的所有虚拟地址。因此将<code>index</code>字段设置为相对于<code>vma-&gt;start</code>的偏移，同时规定在进行remap的时候，<code>page</code>只能被映射到不改变自己<code>index</code>的虚拟地址处，也就是说同一个<code>page</code>在多个<code>vma</code>中，该<code>page</code>的虚拟地址相对于这多个<code>vma</code>的<code>vma-&gt;start</code>都是一样的。这样就可以支持仅凭借<code>page-&gt;index</code>以及其他<code>vma-&gt;start</code>的信息来查到PTE entry了。</p>
 	  
 	</div>
 
@@ -222,6 +238,11 @@
 
 	<!-- toc -->
 	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E6%94%AF%E6%8C%81%E7%9A%84%E9%87%8D%E6%98%A0%E5%B0%84%E6%83%85%E5%86%B5"><span class="toc-article-text">支持的重映射情况</span></a></li></ol>
+		</div>
 	
 	</div>
 	
