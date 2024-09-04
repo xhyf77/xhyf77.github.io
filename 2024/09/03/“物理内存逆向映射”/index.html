@@ -160,7 +160,7 @@
 <p>因为子进程共用了父进程的<code>anon_vma</code>结构，因此在查找<code>Page frame2</code>的逆向映射的时候，要遍历<code>VMA_P和VMA_C</code>，而<code>VMA_P</code>是无效遍历，对于<code>fork</code>密集的场景，这样会造成很多无效遍历，导致效率十分低下。</p>
 <h4 id="思考：能否在第一次写操作的时候给该vma新建一个anon-vma？"><a href="#思考：能否在第一次写操作的时候给该vma新建一个anon-vma？" class="headerlink" title="思考：能否在第一次写操作的时候给该vma新建一个anon_vma？"></a>思考：能否在第一次写操作的时候给该<code>vma</code>新建一个<code>anon_vma</code>？</h4><p>我们针对<code>fork</code>出来的进程在第一次写操作(写到图中<code>Page frame 2</code>对应的虚拟地址)的时候新建一个<code>anon_vma2</code>，然后将这个<code>Page frame 2</code>指向新的<code>anon_vma2</code>，同时也将<code>vma_c</code>指向新的<code>anon_vma2</code>。在之后的写访问就按照原来的规则进行。</p>
 <p>答案是不行的，其实仔细思考一下，这样当<code>VMA_C</code>的其他虚拟地址处发生了缺页异常后，我们都会尝试重新分配一个<code>anon_vma</code>给它，那么这就有点类似于上一个版本<code>pte_chain</code>时期的逆向映射方案了。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>这个方案有点类似于分块的思想，原来的<code>pte_chain</code>是给每一个<code>page frame</code>都维护一个映射列表，这样<code>unmap</code>时查询每一个有效<code>vma</code>的时间是$$O(1)$$，但内存消耗很大。但现在这个算法是每个<code>vma</code>里面的所有<code>page frame</code>都归于一个<code>anon_vma</code>(list),同时多个<code>vma</code>也可能共享一个<code>anon_vma</code>(list)。这样节省了内存，但增加了<code>unmap</code>耗费的时间。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>这个方案有点类似于分块的思想，原来的<code>pte_chain</code>是给每一个<code>page frame</code>都维护一个映射列表，这样<code>unmap</code>时查询每一个有效<code>vma</code>的时间是$O(1)$，但内存消耗很大。但现在这个算法是每个<code>vma</code>里面的所有<code>page frame</code>都归于一个<code>anon_vma</code>(list),同时多个<code>vma</code>也可能共享一个<code>anon_vma</code>(list)。这样节省了内存，但增加了<code>unmap</code>耗费的时间。</p>
 <p>但对于<code>fork</code>这个动作来说</p>
 <ul>
 <li><code>pte_chain</code>的方案会更新每个<code>page frame</code>的<code>pte_chain</code>，耗费的时间很大。</li>
