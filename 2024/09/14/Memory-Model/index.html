@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Reverse Mapping in Linux Kernel v2.6.34 or later | xhyf77</title>
+  <title>Memory Model | xhyf77</title>
   <meta name="author" content="John Doe">
   
-  <meta name="description" content="这个版本的reverse mapping技术是较为先进的，下面给出几个学习过程中的参考资料">
+  <meta name="description" content="提供一下学习**Sparse Memory Model **的资料">
   
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <meta property="og:title" content="Reverse Mapping in Linux Kernel v2.6.34 or later"/>
+  <meta property="og:title" content="Memory Model"/>
   <meta property="og:site_name" content="xhyf77"/>
 
   
@@ -100,7 +100,7 @@
 
 	
 		<div class="page-header page-header-inverse ">		
-			<h1 class="title title-inverse "> Reverse Mapping in Linux Kernel v2.6.34 or later</h1>
+			<h1 class="title title-inverse "> Memory Model</h1>
 		</div>		
 	
 
@@ -120,12 +120,13 @@
 	<div class="mypage">		
 	  		
 
-	  <p>这个版本的reverse mapping技术是较为先进的，下面给出几个学习过程中的参考资料</p>
+	  <p>提供一下学习**Sparse Memory Model **的资料</p>
 <span id="more"></span>
 
-<p><a target="_blank" rel="noopener" href="https://www.slideshare.net/AdrianHuang/reverse-mapping-rmap-in-linux-kernel#24">Reverse Mapping (rmap) in Linux Kernel  by: Adrian Huang</a></p>
-<p><a target="_blank" rel="noopener" href="http://www.wowotech.net/memory_management/reverse_mapping.html">逆向映射的演进</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/LoyenWang/p/12164683.html">【原创】（十五）Linux内存管理之RMAPzz)</a></p>
+<p>关于VMEMMAP：<a target="_blank" rel="noopener" href="https://blog.csdn.net/gjioui123/article/details/128284701">arm64内核内存布局-之vmemmap（page初始化）</a></p>
+<p>关于各种Memory Model的演进：<a target="_blank" rel="noopener" href="http://www.wowotech.net/memory_management/memory_model.html">Linux内存模型</a></p>
+<p>其他辅助资料：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/LoyenWang/p/11523678.html">【原创】（四）Linux内存模型之Sparse Memory Model </a>](<a target="_blank" rel="noopener" href="https://www.cnblogs.com/LoyenWang/p/11523678.html">https://www.cnblogs.com/LoyenWang/p/11523678.html</a>)</p>
+<p>Slide：<a target="_blank" rel="noopener" href="https://www.slideshare.net/slideshow/physical-memory-modelspdf/252020116#7">Physical Memory Models.pdf</a></p>
 	  
 	</div>
 
@@ -137,14 +138,14 @@
 	<div class="pagination">
 <ul class="pagination">
 	 
-				
-		<li class="prev"><a href="/2024/09/14/Memory-Model/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>Prev</a></li>
-  		
+		
+          <li class="prev disabled"><a><i class="fa fa-arrow-circle-o-left"></i>Prev</a></li>
+        
 
         <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
 
 		
-          <li class="next"><a href="/2024/09/03/%E2%80%9C%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E9%80%86%E5%90%91%E6%98%A0%E5%B0%84%E2%80%9D/" class="alignright next">Next<i class="fa fa-arrow-circle-o-right"></i></a></li>
+          <li class="next"><a href="/2024/09/13/Reverse-Mapping-in-Linux-Kernel-v2-6-34-or-later/" class="alignright next">Next<i class="fa fa-arrow-circle-o-right"></i></a></li>
         
 	
 </ul>
@@ -195,7 +196,7 @@
 	
 	<div class="meta-widget">
 	<i class="fa fa-clock-o"></i>
-	2024-09-13 
+	2024-09-14 
 	</div>
 	
 
@@ -214,15 +215,6 @@
 	
 
 	<!-- tags -->
-	
-	<div class="meta-widget">
-	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
-    <ul id="tags" class="tag_box list-unstyled collapse in">	  
-	    
-  <li><a href="/tags/linux-kernel-v2-6-34/">linux-kernel-v2.6.34<span>1</span></a></li>
-
-    </ul>
-	</div>
 	
 
 	<!-- toc -->
