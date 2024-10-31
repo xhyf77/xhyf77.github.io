@@ -1,0 +1,347 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>System V shared memory | xhyf77</title>
+  <meta name="author" content="John Doe">
+  
+  <meta name="description" content="关于system v shared memory 的一些数据结构和函数">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="System V shared memory"/>
+  <meta property="og:site_name" content="xhyf77"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+    <link rel="alternative" href="/atom.xml" title="xhyf77" type="application/atom+xml">
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/cerulean.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+  
+  <!-- analytics -->
+  
+
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">xhyf77</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> System V shared memory</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>关于system v shared memory 的一些数据结构和函数</p>
+<span id="more"></span>
+
+<h3 id="ipc-ids（管理多个ipc对象的结构体）"><a href="#ipc-ids（管理多个ipc对象的结构体）" class="headerlink" title="ipc_ids（管理多个ipc对象的结构体）"></a>ipc_ids（管理多个ipc对象的结构体）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ipc_ids</span> &#123;</span></span><br><span class="line">	<span class="type">int</span> in_use;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">short</span> seq;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">rw_semaphore</span> <span class="title">rwsem</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">idr</span> <span class="title">ipcs_idr</span>;</span></span><br><span class="line">	<span class="type">int</span> max_idx;</span><br><span class="line">	<span class="type">int</span> last_idx;	<span class="comment">/* For wrap around detection */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_CHECKPOINT_RESTORE</span></span><br><span class="line">	<span class="type">int</span> next_id;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">rhashtable</span> <span class="title">key_ht</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>ipc_ids</code> 是一个用于管理多个 IPC 对象（如多个消息队列、信号量或共享内存段）的结构体。它主要提供对所有 IPC 对象的全局管理，包括 ID 分配、键值查找和并发访问控制。当创建一个新ipc对象的时候（如shm），会把这个ipc对象加入到哈希表中（struct rhashtable key_ht）。</p>
+<h3 id="kern-ipc-perm（单个对象）"><a href="#kern-ipc-perm（单个对象）" class="headerlink" title="kern_ipc_perm（单个对象）"></a>kern_ipc_perm（单个对象）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kern_ipc_perm</span> &#123;</span></span><br><span class="line">    <span class="type">spinlock_t</span>    lock;       <span class="comment">// 用于保护结构体的自旋锁</span></span><br><span class="line">    <span class="type">bool</span>          deleted;    <span class="comment">// 标记 IPC 对象是否已被删除</span></span><br><span class="line">    <span class="type">int</span>           id;         <span class="comment">// IPC 对象的标识符</span></span><br><span class="line">    <span class="type">key_t</span>         key;        <span class="comment">// IPC 键值</span></span><br><span class="line">    <span class="type">kuid_t</span>        uid;        <span class="comment">// 所有者用户 ID</span></span><br><span class="line">    <span class="type">kgid_t</span>        gid;        <span class="comment">// 所有者组 ID</span></span><br><span class="line">    <span class="type">kuid_t</span>        cuid;       <span class="comment">// 创建者用户 ID</span></span><br><span class="line">    <span class="type">kgid_t</span>        cgid;       <span class="comment">// 创建者组 ID</span></span><br><span class="line">    <span class="type">umode_t</span>       mode;       <span class="comment">// 权限模式（读、写、执行）</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> seq;        <span class="comment">// 序列号，用于生成唯一的 ID</span></span><br><span class="line">    <span class="type">void</span>          *security;  <span class="comment">// 指向安全模块（LSM）使用的安全结构</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rhash_head</span> <span class="title">khtnode</span>;</span><span class="comment">// 哈希表节点，用于快速查找</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rcu_head</span> <span class="title">rcu</span>;</span>      <span class="comment">// RCU 机制头部，用于延迟删除</span></span><br><span class="line">    <span class="type">refcount_t</span>    refcount;   <span class="comment">// 引用计数，管理对象的生命周期</span></span><br><span class="line">&#125; ____cacheline_aligned_in_smp __randomize_layout;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><code>kern_ipc_perm</code> 是一个用于描述<strong>单个</strong> IPC 对象的权限和相关属性的结构体。</p>
+<h3 id="shmid-kernel（单个对象）"><a href="#shmid-kernel（单个对象）" class="headerlink" title="shmid_kernel（单个对象）"></a>shmid_kernel（单个对象）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">shmid_kernel</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">kern_ipc_perm</span> <span class="title">shm_perm</span>;</span>     <span class="comment">// 权限和标识信息</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">file</span>          *<span class="title">shm_file</span>;</span>    <span class="comment">// 关联的文件对象</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span>        shm_nattch;   <span class="comment">// 当前附加到该段的进程数量</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span>        shm_segsz;    <span class="comment">// 共享内存段的大小</span></span><br><span class="line">    <span class="type">time64_t</span>             shm_atim;     <span class="comment">// 上次附加时间</span></span><br><span class="line">    <span class="type">time64_t</span>             shm_dtim;     <span class="comment">// 上次分离时间</span></span><br><span class="line">    <span class="type">time64_t</span>             shm_ctim;     <span class="comment">// 上次改变控制信息时间</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pid</span>           *<span class="title">shm_cprid</span>;</span>   <span class="comment">// 创建者的进程 ID</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pid</span>           *<span class="title">shm_lprid</span>;</span>   <span class="comment">// 最后操作者的进程 ID</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ucounts</span>       *<span class="title">mlock_ucounts</span>;</span><span class="comment">// 计数器，用于内存锁定</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span>   *<span class="title">shm_creator</span>;</span> <span class="comment">// 创建该共享内存段的任务结构</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>     <span class="title">shm_clist</span>;</span>    <span class="comment">// 由创建者维护的共享内存段列表</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ipc_namespace</span> *<span class="title">ns</span>;</span>          <span class="comment">// 所属的 IPC 命名空间</span></span><br><span class="line">&#125; __randomize_layout;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------------+</span><br><span class="line">|          <span class="class"><span class="keyword">struct</span> <span class="title">shmid_kernel</span>         |</span></span><br><span class="line"><span class="class">|--------------------------------------|</span></span><br><span class="line"><span class="class">| + <span class="keyword">struct</span> <span class="title">kern_ipc_perm</span> <span class="title">shm_perm</span>;</span>     | &lt;-- 包含关系</span><br><span class="line">| + <span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">shm_file</span>;</span>             |</span><br><span class="line">| + <span class="type">unsigned</span> <span class="type">long</span> shm_nattch;          |</span><br><span class="line">| + <span class="type">unsigned</span> <span class="type">long</span> shm_segsz;           |</span><br><span class="line">| + <span class="type">time64_t</span> shm_atim;                 |</span><br><span class="line">| + ...                                |</span><br><span class="line">+--------------------------------------+</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">shmid_kernel</span> 是基于 <span class="keyword">struct</span> <span class="title">kern_ipc_perm</span> 扩展的结构体，包含了共享内存段特有的字段。</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="两个表（哈希表，链表）"><a href="#两个表（哈希表，链表）" class="headerlink" title="两个表（哈希表，链表）"></a>两个表（哈希表，链表）</h3><p><code>ipc_ids</code>中的<code>rhashtable</code>用于将<code>ipc</code>对象组织起来（共享内存段对象也属于<code>ipc</code>对象的一种）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- `ipc_ids`中的```rhashtable```</span><br><span class="line"></span><br><span class="line">- ```current-&gt;sysvshm.shm_clist```</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<div class="alert alert-info"><i class="fa fa-info  float-left"></i>  <p>注意，这里只是介绍了shared memory相关的表，system v的其他ipc如message_queue等可能也有自己的表。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### shm_get</span><br><span class="line"></span><br><span class="line">当```shm_get```对应的```key```不存在，创建一个```shm段```的时候会：</span><br><span class="line"></span><br><span class="line">```C</span><br><span class="line">static int newseg(struct ipc_namespace *ns, struct ipc_params *params)&#123;</span><br><span class="line">    struct shmid_kernel *shp;</span><br><span class="line">    shp = kmalloc(sizeof(*shp), GFP_KERNEL_ACCOUNT);</span><br><span class="line">    初始化shp和shp-&gt;shm_perm,....</span><br><span class="line">    error = ipc_addid(&amp;shm_ids(ns), &amp;shp-&gt;shm_perm, ns-&gt;shm_ctlmni); </span><br><span class="line">    //将kern_ipc_perm加入到对应的ipc命名空间的哈希表中，同时也会为ipc对象分配一个id</span><br><span class="line">    list_add(&amp;shp-&gt;shm_clist, &amp;current-&gt;sysvshm.shm_clist); </span><br><span class="line">    //将shp（shmid_kernel）加入当前进程的共享内存段列表</span><br><span class="line">    ....省略</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>同时对于每一个新建的共享内存段，都会在tmpfs文件系统中新建一个文件与之对应</p>
+<p>下图是创建文件时候的一个路径</p>
+<p><img src="https://raw.githubusercontent.com/xhyf77/blog-picture/master/2024/11/upgit_20241101_1730404953.png" alt="1730404919789"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">struct</span> inode *<span class="title function_">shmem_alloc_inode</span><span class="params">(<span class="keyword">struct</span> super_block *sb)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">shmem_inode_info</span> *<span class="title">info</span>;</span></span><br><span class="line">	info = alloc_inode_sb(sb, shmem_inode_cachep, GFP_KERNEL);</span><br><span class="line">	<span class="keyword">if</span> (!info)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">return</span> &amp;info-&gt;vfs_inode;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>重点是这个<code>shmem_inode_info</code>，<code>inode</code>是作为<code>shmem_inode_info</code>的一个成员</p>
+<p>可以理解为：为了满足共享内存的各种操作的需求，定义了一个<code>shmem_inode_info</code>，以扩展 inode 的功能。</p>
+<p>通过将 <code>struct inode</code> 嵌入到自定义结构体<code>shmem_inode_info</code>中，tmpfs 可以在保持通用 <code>inode</code>功能的同时，增加特定的功能和数据</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">shmem_inode_info</span> &#123;</span></span><br><span class="line">    <span class="type">spinlock_t</span>        lock;            <span class="comment">/* 自旋锁，用于保护结构体中的数据 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span>      seals;           <span class="comment">/* 内存密封标志（memfd seals） */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span>     flags;           <span class="comment">/* 特定于 shmem 的标志 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span>     alloced;         <span class="comment">/* 分配给文件的数据页数 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span>     swapped;         <span class="comment">/* 已交换出去的页的数量 */</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">offset_ctx</span> <span class="title">dir_offsets</span>;</span> <span class="comment">/* 稳定的目录偏移（用于目录项） */</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">shrinklist</span>;</span> <span class="comment">/* 可收缩的巨大页面 inode 列表 */</span></span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">swaplist</span>;</span>   <span class="comment">/* 可能交换的 inode 链表 */</span></span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timespec64</span> <span class="title">i_crtime</span>;</span>        <span class="comment">/* 文件创建时间 */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">shared_policy</span> <span class="title">policy</span>;</span>       <span class="comment">/* NUMA 内存分配策略 */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">simple_xattrs</span> <span class="title">xattrs</span>;</span>       <span class="comment">/* 扩展属性（xattrs）列表 */</span></span><br><span class="line">    <span class="type">pgoff_t</span>          fallocend;        <span class="comment">/* 最高的预分配结束索引 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span>     fsflags;          <span class="comment">/* 用于 FS_IOC_[SG]ETFLAGS */</span></span><br><span class="line">    <span class="type">atomic_t</span>         stop_eviction;    <span class="comment">/* 在处理 inode 时阻止回收 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_TMPFS_QUOTA</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dquot</span> __<span class="title">rcu</span> *<span class="title">i_dquot</span>[<span class="title">MAXQUOTAS</span>];</span> <span class="comment">/* 磁盘配额指针数组 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">inode</span>     <span class="title">vfs_inode</span>;</span>        <span class="comment">/* 通用的 VFS 层 inode 结构体 */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到通过这个结构体扩展了诸如：NUMA 内存分配策略，特定于 shmem 的标志等功能。</p>
+<h3 id="do-shmat（函数）"><a href="#do-shmat（函数）" class="headerlink" title="do_shmat（函数）"></a>do_shmat（函数）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span> <span class="title function_">do_shmat</span><span class="params">(<span class="type">int</span> shmid, <span class="type">char</span> __user *shmaddr, <span class="type">int</span> shmflg,</span></span><br><span class="line"><span class="params">	      ulong *raddr, <span class="type">unsigned</span> <span class="type">long</span> shmlba)</span></span><br></pre></td></tr></table></figure>
+
+<p>主要工作是根据给定<code>shmid</code>将该共享内存段映射到用户空间中</p>
+<p>主要进行一些访问权限的检查，然后将之前对应的共享内存段绑定的tmpfs文件内容克隆一份新的，然后拿着这个新的文件去do_mmap将其映射到用户空间来。</p>
+<p>下面省略了很多内容，只写了主要的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span> <span class="title function_">do_shmat</span><span class="params">(<span class="type">int</span> shmid, <span class="type">char</span> __user *shmaddr, <span class="type">int</span> shmflg,</span></span><br><span class="line"><span class="params">	      ulong *raddr, <span class="type">unsigned</span> <span class="type">long</span> shmlba)</span>&#123;</span><br><span class="line">	      ns = current-&gt;nsproxy-&gt;ipc_ns;</span><br><span class="line">	      shp = shm_obtain_object_check(ns, shmid);</span><br><span class="line">	      base = get_file(shp-&gt;shm_file);</span><br><span class="line">		  shp-&gt;shm_nattch++;</span><br><span class="line">	      file = alloc_file_clone(base, f_flags , is_file_hugepages(base) ?</span><br><span class="line">				&amp;shm_file_operations_huge :</span><br><span class="line">				&amp;shm_file_operations);</span><br><span class="line">		  addr = do_mmap(file, addr, size, prot, flags, <span class="number">0</span>, <span class="number">0</span>, &amp;populate, <span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>#ifdef CONFIG_SHMEM</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">shm_file_operations</span> =</span> &#123;</span><br><span class="line">	.mmap		= shm_mmap,</span><br><span class="line">	.fsync		= shm_fsync,</span><br><span class="line">	.release	= shm_release,</span><br><span class="line">	.get_unmapped_area	= shm_get_unmapped_area,</span><br><span class="line">	.llseek		= noop_llseek,</span><br><span class="line">	.fallocate	= shm_fallocate,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>#else</code></p>
+<p>退化为<code>ramfs_file_operations</code></p>
+<p>但是值得注意的是，当我们创建一个新的共享内存段的时候，使用的操作符是<code>shmem_file_operations</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">shmem_file_operations</span> =</span> &#123;</span><br><span class="line">	.mmap		= shmem_mmap,</span><br><span class="line">	.open		= shmem_file_open,</span><br><span class="line">	.get_unmapped_area = shmem_get_unmapped_area,</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_TMPFS</span></span><br><span class="line">	.llseek		= shmem_file_llseek,</span><br><span class="line">	.read_iter	= shmem_file_read_iter,</span><br><span class="line">	.write_iter	= shmem_file_write_iter,</span><br><span class="line">	.fsync		= noop_fsync,</span><br><span class="line">	.splice_read	= shmem_file_splice_read,</span><br><span class="line">	.splice_write	= iter_file_splice_write,</span><br><span class="line">	.fallocate	= shmem_fallocate,</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>为什么在这里克隆一个新的文件的时候变成了<code>shm_file_operations</code>呢？</p>
+<p>原因是：</p>
+<p>**<code>shmem_file_operations</code>**：用于共享内存段的后备文件，提供完整的文件系统操作，与 <code>tmpfs</code> 文件系统集成。</p>
+<p>**<code>shm_file_operations</code>**：用于共享内存段的映射文件，提供定制的内存映射操作，满足共享内存的特殊需求。</p>
+<p>这个克隆感觉更像是一种层次化的抽象，将原来的<code>shmem_file_operations</code>tmpfs文件系统接口抽象为共享内存的接口。</p>
+<h3 id="mmap时的动作"><a href="#mmap时的动作" class="headerlink" title="mmap时的动作"></a>mmap时的动作</h3><p>由于<code>do_mmap</code>的时候传了<code>file</code>参数，所以会调用<code>file-&gt;mmap</code>来构建<code>vma</code>和<code>file</code>之间的关系</p>
+<p><code>shm_mmap</code>最终会调用<code>shmem_mmap</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">shmem_mmap</span><span class="params">(<span class="keyword">struct</span> file *file, <span class="keyword">struct</span> vm_area_struct *vma)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *<span class="title">inode</span> =</span> file_inode(file);</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">shmem_inode_info</span> *<span class="title">info</span> =</span> SHMEM_I(inode);</span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line"></span><br><span class="line">	ret = seal_check_write(info-&gt;seals, vma);</span><br><span class="line">	<span class="keyword">if</span> (ret)</span><br><span class="line">		<span class="keyword">return</span> ret;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* arm64 - allow memory tagging on RAM-based files */</span></span><br><span class="line">	vm_flags_set(vma, VM_MTE_ALLOWED);</span><br><span class="line"></span><br><span class="line">	file_accessed(file);</span><br><span class="line">	<span class="comment">/* This is anonymous shared memory if it is unlinked at the time of mmap */</span></span><br><span class="line">	<span class="keyword">if</span> (inode-&gt;i_nlink)</span><br><span class="line">		vma-&gt;vm_ops = &amp;shmem_vm_ops;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		vma-&gt;vm_ops = &amp;shmem_anon_vm_ops;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>主要就是把<code>vma-&gt;vm_ops</code>设置成<code>shmem_vm_ops</code> or <code>shmem_anon_vm_ops</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">vm_operations_struct</span> <span class="title">shmem_vm_ops</span> =</span> &#123;</span><br><span class="line">	.fault		= shmem_fault,</span><br><span class="line">	.map_pages	= filemap_map_pages,</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_NUMA</span></span><br><span class="line">	.set_policy     = shmem_set_policy,</span><br><span class="line">	.get_policy     = shmem_get_policy,</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">vm_operations_struct</span> <span class="title">shmem_anon_vm_ops</span> =</span> &#123;</span><br><span class="line">	.fault		= shmem_fault,</span><br><span class="line">	.map_pages	= filemap_map_pages,</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_NUMA</span></span><br><span class="line">	.set_policy     = shmem_set_policy,</span><br><span class="line">	.get_policy     = shmem_get_policy,</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到支持<code>set_policy</code>，因此可以推断这块共享内存是支持<code>mbind</code>等API来设置某一段<code>policy</code>的</p>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+		
+          <li class="prev disabled"><a><i class="fa fa-arrow-circle-o-left"></i>Prev</a></li>
+        
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+          <li class="next"><a href="/2024/09/14/Memory-Model/" class="alignright next">Next<i class="fa fa-arrow-circle-o-right"></i></a></li>
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">Comments</h2>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2024-10-31 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/linux-kernel-Memory-Management/">linux kernel Memory Management<span>4</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/linux-kernel-v6-12-rc5/">linux-kernel-v6.12-rc5<span>1</span></a></li> <li><a href="/tags/system-v-shared-memory/">system v shared memory<span>1</span></a></li>
+
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#ipc-ids%EF%BC%88%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAipc%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%BB%93%E6%9E%84%E4%BD%93%EF%BC%89"><span class="toc-article-text">ipc_ids（管理多个ipc对象的结构体）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#kern-ipc-perm%EF%BC%88%E5%8D%95%E4%B8%AA%E5%AF%B9%E8%B1%A1%EF%BC%89"><span class="toc-article-text">kern_ipc_perm（单个对象）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#shmid-kernel%EF%BC%88%E5%8D%95%E4%B8%AA%E5%AF%B9%E8%B1%A1%EF%BC%89"><span class="toc-article-text">shmid_kernel（单个对象）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E4%B8%A4%E4%B8%AA%E8%A1%A8%EF%BC%88%E5%93%88%E5%B8%8C%E8%A1%A8%EF%BC%8C%E9%93%BE%E8%A1%A8%EF%BC%89"><span class="toc-article-text">两个表（哈希表，链表）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#do-shmat%EF%BC%88%E5%87%BD%E6%95%B0%EF%BC%89"><span class="toc-article-text">do_shmat（函数）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#mmap%E6%97%B6%E7%9A%84%E5%8A%A8%E4%BD%9C"><span class="toc-article-text">mmap时的动作</span></a></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2024 John Doe
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a target="_blank" rel="noopener" href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+
+</body>
+</html>
