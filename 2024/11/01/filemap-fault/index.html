@@ -3,13 +3,15 @@
 <head>
   <meta charset="utf-8">
   
-  <title>linux-kernel-v2.6.34 | xhyf77</title>
+  <title>filemap_fault | xhyf77</title>
   <meta name="author" content="John Doe">
+  
+  <meta name="description" content="">
   
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  
+  <meta property="og:title" content="filemap_fault"/>
   <meta property="og:site_name" content="xhyf77"/>
 
   
@@ -95,154 +97,153 @@
     <div class="content">
       
 
-<!-- title -->
-<div class="page-header page-header-inverse ">
-  <h1 class="archive-title-tag title title-inverse ">linux-kernel-v2.6.34</h1>
-</div>
 
-<div class="row page">
-  <!-- cols -->
-  
-  <div class="col-md-9">
 	
-
-	  <div id="top_search"></div>
-
-      
-         <!-- display as entry -->
-	     <div class="mypage">
-	       
-		     
-	
-	<!-- display as entry -->	
-		<h3 class="title">
-			<div class="date"> 2024-09-13 </div>
-			<div class="article-title"><a href="/2024/09/13/Reverse-Mapping-in-Linux-Kernel-v2-6-34-or-later/" >Reverse Mapping in Linux Kernel v2.6.34 or later</a></div>
-		</h3>
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> filemap_fault</h1>
+		</div>		
 	
 
 
-		     
-<div class="entry">
 
-  <div class="row">
+
+
+
+<div class="row post">
+	<!-- cols -->
 	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
 	
-		<p>这个版本的reverse mapping技术是较为先进的，下面给出几个学习过程中的参考资料</p>
-	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p><img src="https://raw.githubusercontent.com/xhyf77/blog-picture/master/2024/11/upgit_20241101_1730410873.png" alt="image-20241101054111492"></p>
+<span id="more"></span>
+
+<p><code>filemap_fault</code>关于可能进行物理内存分配的相关调用链</p>
+<blockquote>
+<p>图释用于个人研究，可忽略</p>
+</blockquote>
+	  
 	</div>
-  <a type="button" href="/2024/09/13/Reverse-Mapping-in-Linux-Kernel-v2-6-34-or-later/#more" class="btn btn-default more">Read More</a>
-</div>
 
-	       
-	     </div>
-	     <div>
-	       <center>
-	         <div class="pagination">
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
 <ul class="pagination">
 	 
+		
+          <li class="prev disabled"><a><i class="fa fa-arrow-circle-o-left"></i>Prev</a></li>
+        
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+          <li class="next"><a href="/2024/10/31/System%20V%20shared%20memory/" class="alignright next">Next<i class="fa fa-arrow-circle-o-right"></i></a></li>
+        
+	
 </ul>
 </div>
 
-	       </center>
-	     </div>	
-      
-
-</div> <!-- col-md-9/col-md-12 -->
-
-
-<div class="col-md-3">
-	<div id="sidebar">
-	
-			
-  <div id="site_search">
-   <div class="form-group">
-    <input type="text" id="local-search-input" name="q" results="0" placeholder="Search" class="st-search-input st-default-search-input form-control"/>
-   </div>  
-  <div id="local-search-result"></div>
-  </div>
-
-
-		
-			
-	<div class="widget">
-		<h4>Categories</h4>
-		<ul class="tag_box inline list-unstyled">
-		
-			<li><a href="/categories/Docs/">Docs<span>1</span></a></li>
-		
-			<li><a href="/categories/linux-kernel-Memory-Management/">linux kernel Memory Management<span>5</span></a></li>
-		
-		</ul>
+    </center>
 	</div>
 
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">Comments</h2>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
 		
-			
-	<div class="widget">
-		<h4>Tag Cloud</h4>
-		<ul class="tag_box inline list-unstyled">		
-		
-			<li><a href="/tags/filemap-fault/">filemap_fault<span>1</span></a></li>
-		
-			<li><a href="/tags/linux-kernel-v6-12-rc5/">linux-kernel-v6.12-rc5<span>2</span></a></li>
-		
-			<li><a href="/tags/system-v-shared-memory/">system v shared memory<span>1</span></a></li>
-		
-			<li><a href="/tags/linux-kernel-v2-6-34/">linux-kernel-v2.6.34<span>1</span></a></li>
-		
-			<li><a href="/tags/linux-kernel-v2-6-11/">linux-kernel-v2.6.11<span>1</span></a></li>
-		
-			<li><a href="/tags/plugins/">plugins<span>1</span></a></li>
-		
-		 
-		</ul>
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2024-11-01 
 	</div>
-
-
-		
-			
-<div class="widget">
-  <h4>Recent Posts</h4>
-  <ul class="entry list-unstyled">
-    
-      <li>
-        <a href="/2024/11/01/filemap-fault/" ><i class="fa fa-file-o"></i>filemap_fault</a>
-      </li>
-    
-      <li>
-        <a href="/2024/10/31/System%20V%20shared%20memory/" ><i class="fa fa-file-o"></i>System V shared memory</a>
-      </li>
-    
-      <li>
-        <a href="/2024/09/14/Memory-Model/" ><i class="fa fa-file-o"></i>Memory Model</a>
-      </li>
-    
-      <li>
-        <a href="/2024/09/13/Reverse-Mapping-in-Linux-Kernel-v2-6-34-or-later/" ><i class="fa fa-file-o"></i>Reverse Mapping in Linux Ke...</a>
-      </li>
-    
-      <li>
-        <a href="/2024/09/03/%E2%80%9C%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E9%80%86%E5%90%91%E6%98%A0%E5%B0%84%E2%80%9D/" ><i class="fa fa-file-o"></i>物理内存逆向映射(v2.6.11版)</a>
-      </li>
-    
-  </ul>
-</div>
-
-		
-			
-<div class="widget">
-	<h4>Links</h4>
-	<ul class="blogroll list-unstyled">
 	
-		<li><i class="fa fa-github"></i><a href="http://www.github.com/xhyf77" title="My Github account." target="_blank"]);">My Github</a></li>
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/linux-kernel-Memory-Management/">linux kernel Memory Management<span>5</span></a></li>
+  </li>
+
+    </ul>
+	</div>
 	
-	</ul>
-</div>
 
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/linux-kernel-v6-12-rc5/">linux-kernel-v6.12-rc5<span>2</span></a></li> <li><a href="/tags/filemap-fault/">filemap_fault<span>1</span></a></li>
 
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+			
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
 		
-	</div> <!-- sidebar -->
-</div> <!-- col-md-3 -->
+
+</div><!-- row -->
 
 
 
