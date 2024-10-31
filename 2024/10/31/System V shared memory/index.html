@@ -138,10 +138,18 @@
 
 
 <h3 id="两个表（哈希表，链表）"><a href="#两个表（哈希表，链表）" class="headerlink" title="两个表（哈希表，链表）"></a>两个表（哈希表，链表）</h3><p><code>ipc_ids</code>中的<code>rhashtable</code>用于将<code>ipc</code>对象组织起来（共享内存段对象也属于<code>ipc</code>对象的一种）</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- `ipc_ids`中的```rhashtable```</span><br><span class="line"></span><br><span class="line">- ```current-&gt;sysvshm.shm_clist```</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<div class="alert alert-info"><i class="fa fa-info  float-left"></i>  <p>注意，这里只是介绍了shared memory相关的表，system v的其他ipc如message_queue等可能也有自己的表。</p>
-</div>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### shm_get</span><br><span class="line"></span><br><span class="line">当```shm_get```对应的```key```不存在，创建一个```shm段```的时候会：</span><br><span class="line"></span><br><span class="line">```C</span><br><span class="line">static int newseg(struct ipc_namespace *ns, struct ipc_params *params)&#123;</span><br><span class="line">    struct shmid_kernel *shp;</span><br><span class="line">    shp = kmalloc(sizeof(*shp), GFP_KERNEL_ACCOUNT);</span><br><span class="line">    初始化shp和shp-&gt;shm_perm,....</span><br><span class="line">    error = ipc_addid(&amp;shm_ids(ns), &amp;shp-&gt;shm_perm, ns-&gt;shm_ctlmni); </span><br><span class="line">    //将kern_ipc_perm加入到对应的ipc命名空间的哈希表中，同时也会为ipc对象分配一个id</span><br><span class="line">    list_add(&amp;shp-&gt;shm_clist, &amp;current-&gt;sysvshm.shm_clist); </span><br><span class="line">    //将shp（shmid_kernel）加入当前进程的共享内存段列表</span><br><span class="line">    ....省略</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>current-&gt;sysvshm.shm_clist</code>用于将当前线程的共享内存段组织起来</p>
+<ul>
+<li><p><code>ipc_ids</code>中的<code>rhashtable</code></p>
+</li>
+<li><p><code>current-&gt;sysvshm.shm_clist</code></p>
+</li>
+</ul>
+<blockquote>
+<p>注意，这里只是介绍了shared memory相关的表，system v的其他ipc如message_queue等可能也有自己的表。</p>
+</blockquote>
+<h3 id="shm-get"><a href="#shm-get" class="headerlink" title="shm_get"></a>shm_get</h3><p>当<code>shm_get</code>对应的<code>key</code>不存在，创建一个<code>shm段</code>的时候会：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">static int newseg(struct ipc_namespace *ns, struct ipc_params *params)&#123;</span><br><span class="line">    struct shmid_kernel *shp;</span><br><span class="line">    shp = kmalloc(sizeof(*shp), GFP_KERNEL_ACCOUNT);</span><br><span class="line">    初始化shp和shp-&gt;shm_perm,....</span><br><span class="line">    error = ipc_addid(&amp;shm_ids(ns), &amp;shp-&gt;shm_perm, ns-&gt;shm_ctlmni); </span><br><span class="line">    //将kern_ipc_perm加入到对应的ipc命名空间的哈希表中，同时也会为ipc对象分配一个id</span><br><span class="line">    list_add(&amp;shp-&gt;shm_clist, &amp;current-&gt;sysvshm.shm_clist); </span><br><span class="line">    //将shp（shmid_kernel）加入当前进程的共享内存段列表</span><br><span class="line">    ....省略</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
 
@@ -173,8 +181,8 @@
 
 <p>为什么在这里克隆一个新的文件的时候变成了<code>shm_file_operations</code>呢？</p>
 <p>原因是：</p>
-<p>**<code>shmem_file_operations</code>**：用于共享内存段的后备文件，提供完整的文件系统操作，与 <code>tmpfs</code> 文件系统集成。</p>
-<p>**<code>shm_file_operations</code>**：用于共享内存段的映射文件，提供定制的内存映射操作，满足共享内存的特殊需求。</p>
+<p><code>shmem_file_operations</code>：用于共享内存段的后备文件，提供完整的文件系统操作，与 <code>tmpfs</code> 文件系统集成。</p>
+<p><code>shm_file_operations</code>：用于共享内存段的映射文件，提供定制的内存映射操作，满足共享内存的特殊需求。</p>
 <p>这个克隆感觉更像是一种层次化的抽象，将原来的<code>shmem_file_operations</code>tmpfs文件系统接口抽象为共享内存的接口。</p>
 <h3 id="mmap时的动作"><a href="#mmap时的动作" class="headerlink" title="mmap时的动作"></a>mmap时的动作</h3><p>由于<code>do_mmap</code>的时候传了<code>file</code>参数，所以会调用<code>file-&gt;mmap</code>来构建<code>vma</code>和<code>file</code>之间的关系</p>
 <p><code>shm_mmap</code>最终会调用<code>shmem_mmap</code></p>
@@ -288,7 +296,7 @@
 	
 	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
 	   <div id="toc" class="toc collapse in">
-			<ol class="toc-article"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#ipc-ids%EF%BC%88%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAipc%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%BB%93%E6%9E%84%E4%BD%93%EF%BC%89"><span class="toc-article-text">ipc_ids（管理多个ipc对象的结构体）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#kern-ipc-perm%EF%BC%88%E5%8D%95%E4%B8%AA%E5%AF%B9%E8%B1%A1%EF%BC%89"><span class="toc-article-text">kern_ipc_perm（单个对象）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#shmid-kernel%EF%BC%88%E5%8D%95%E4%B8%AA%E5%AF%B9%E8%B1%A1%EF%BC%89"><span class="toc-article-text">shmid_kernel（单个对象）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E4%B8%A4%E4%B8%AA%E8%A1%A8%EF%BC%88%E5%93%88%E5%B8%8C%E8%A1%A8%EF%BC%8C%E9%93%BE%E8%A1%A8%EF%BC%89"><span class="toc-article-text">两个表（哈希表，链表）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#do-shmat%EF%BC%88%E5%87%BD%E6%95%B0%EF%BC%89"><span class="toc-article-text">do_shmat（函数）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#mmap%E6%97%B6%E7%9A%84%E5%8A%A8%E4%BD%9C"><span class="toc-article-text">mmap时的动作</span></a></li></ol>
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#ipc-ids%EF%BC%88%E7%AE%A1%E7%90%86%E5%A4%9A%E4%B8%AAipc%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%BB%93%E6%9E%84%E4%BD%93%EF%BC%89"><span class="toc-article-text">ipc_ids（管理多个ipc对象的结构体）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#kern-ipc-perm%EF%BC%88%E5%8D%95%E4%B8%AA%E5%AF%B9%E8%B1%A1%EF%BC%89"><span class="toc-article-text">kern_ipc_perm（单个对象）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#shmid-kernel%EF%BC%88%E5%8D%95%E4%B8%AA%E5%AF%B9%E8%B1%A1%EF%BC%89"><span class="toc-article-text">shmid_kernel（单个对象）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E4%B8%A4%E4%B8%AA%E8%A1%A8%EF%BC%88%E5%93%88%E5%B8%8C%E8%A1%A8%EF%BC%8C%E9%93%BE%E8%A1%A8%EF%BC%89"><span class="toc-article-text">两个表（哈希表，链表）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#shm-get"><span class="toc-article-text">shm_get</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#do-shmat%EF%BC%88%E5%87%BD%E6%95%B0%EF%BC%89"><span class="toc-article-text">do_shmat（函数）</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#mmap%E6%97%B6%E7%9A%84%E5%8A%A8%E4%BD%9C"><span class="toc-article-text">mmap时的动作</span></a></li></ol>
 		</div>
 	
 	</div>
